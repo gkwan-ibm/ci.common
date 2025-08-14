@@ -62,8 +62,7 @@ public class OpenLibertyTools {
                     blogEntry.append("Summary: " + entryNode.getFirstChild().getNodeValue() + "\n");
                 } else if (entryNode.getNodeName() == "link") {
                     String url = entryNode.getAttributes()
-                                    .getNamedItem("href").getNodeValue();
-                        
+                                     .getNamedItem("href").getNodeValue();
                     blogEntry.append("URL: " + url + "\n");
                 } else if (entryNode.getNodeName() == "updated") {
                     blogEntry.append("Date: " + entryNode.getFirstChild().getNodeValue() + "\n");
