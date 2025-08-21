@@ -451,7 +451,8 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
     // for gradle, this map will be kept as null
     protected Map<String, Boolean> projectRecompileMap;
 
-    ChatAgent chatAgent = null;
+    private ChatAgent chatAgent = null;
+    private boolean AIMode;
 
     // constructor for maven
     public DevUtil(File buildDirectory, File serverDirectory, File sourceDirectory, File testSourceDirectory,
@@ -2485,6 +2486,7 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                 // the following will be printed only on startup or restart
                 info(formatAttentionMessage("h - see the help menu for available actions, type 'h' and press Enter."));
                 info(formatAttentionMessage("q - stop the server and quit dev mode, press Ctrl-C or type 'q' and press Enter."));
+                info(formatAttentionMessage("a - toggle the AI mode, type 'a' and press Enter."));
             } else {
                 // the following will be printed every time after the tests run
                 printTestsMessage(false);
@@ -2567,6 +2569,11 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                 }
             }
 
+            if (getChatAgent() == null) {
+                AIMode = false;
+            } else {
+                AIMode = true;
+            }
             printAIStatus();
 
             // print barrier footer
@@ -2575,7 +2582,7 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
     }
 
     private void printAIStatus() {
-        if (getChatAgent() == null) {
+        if (AIMode == false || getChatAgent() == null) {
             return;
         }
         info(formatAttentionMessage(""));
@@ -2591,7 +2598,7 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
 	        info(formatAttentionMessage("Reset chat session - type in " + cyan("@ai reset") + " and press Enter."));
             info(formatAttentionMessage("View a previous message - press Up/Down arrow key."));
 		} catch (Exception e) {
-            info(formatAttentionTitle("AI is not avaliable."));
+            info(formatAttentionTitle("AI is not available."));
 		}
     }
 
@@ -2622,6 +2629,7 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
         }
         info(formatAttentionMessage("h - see the help menu for available actions, type 'h' and press Enter."));
         info(formatAttentionMessage("q - stop the server and quit dev mode, press Ctrl-C or type 'q' and press Enter."));
+        info(formatAttentionMessage("a - toggle the AI mode, type 'a' and press Enter."));
         printAIStatus();
     }
 
@@ -2739,9 +2747,6 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
     }
 
     private void chat(String message) {
-        if (getChatAgent() == null) {
-            return;
-        }
         String response = null;
         try {
             LoadingThread.show();
@@ -2789,6 +2794,7 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
             HotKey g = new HotKey("g");
             HotKey o = new HotKey("o");
             HotKey t = new HotKey("t");
+            HotKey a = new HotKey("a");
             HotKey enter = new HotKey("");
             while (!shutdown) {
                 debug("Waiting for action key");
@@ -2819,6 +2825,19 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                         warn("Cannot optimize features because automatic generation of features is off.");
                         warn("To toggle the automatic generation of features, type 'g' and press Enter.");
                     }
+                } else if (a.isPressed(line)) {
+                    // Reverse the mode
+                    if (AIMode == true) {
+                        info("AI mode has been turned off.");
+                    } else {
+                        if (getChatAgent() == null) {
+                            warn("AI could not be started, ensure the API/URL and model is correct");
+                            continue;
+                        }
+
+                        info("AI mode has been turned on.");
+                    }
+                    AIMode = !AIMode;
                 } else if ((t.isPressed(line) && isChangeOnDemandTestsAction()) || (enter.isPressed(line) && !isChangeOnDemandTestsAction())) {
                     debug("Detected test command. Running tests... ");
                     if (isMultiModuleProject()) {
@@ -2829,36 +2848,38 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                     }
                 } else if (enter.isPressed(line) && isChangeOnDemandTestsAction()) {
                     warn("Unrecognized command: Enter. To see the help menu, type 'h' and press Enter.");
-                } else {
-                    if (getChatAgent() != null && line.startsWith("@ai")) {
-                        line = line.substring("@ai".length());
-                        if (line.trim().startsWith("[")) {
-                            // Accept multiline input between @ai[ and @ai]
-                            StringBuilder builder = new StringBuilder();
-                            builder.append(line.trim().substring("[".length()));
-                            builder.append("\n");
-                            while (true) {
-                                String more = Utils.getReader().readLine();
-                                if (more.startsWith("@ai")) {
-                                    if (more.substring("@ai".length()).trim().equals("]")) {
-                                        break;
-                                    }
-                                    more = more.substring("@ai".length());
-                                    if (more.trim().startsWith("[")) {
-                                        more = more.trim().substring("[".length());
-                                    }
-                                    builder = new StringBuilder();
-                                    System.out.println("Restarted the " + cyan("@ai [") + " multi-line message");
-                                }
-                                builder.append(more);
-                                builder.append("\n");
-                            }
-                            line = builder.toString();
-                        }
-                        chat(line.trim());
-                    } else {
-                        warn("Unrecognized command: " + line + ". To see the help menu, type 'h' and press Enter.");
+                } else if (AIMode && line.startsWith("@ai")) {
+                    if (getChatAgent() == null) {
+                        warn("AI could not be started, ensure the API/URL and model is correct");
                     }
+
+                    line = line.substring("@ai".length());
+                    if (line.trim().startsWith("[")) {
+                        // Accept multiline input between @ai[ and @ai]
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(line.trim().substring("[".length()));
+                        builder.append("\n");
+                        while (true) {
+                            String more = Utils.getReader().readLine();
+                            if (more.startsWith("@ai")) {
+                                if (more.substring("@ai".length()).trim().equals("]")) {
+                                    break;
+                                }
+                                more = more.substring("@ai".length());
+                                if (more.trim().startsWith("[")) {
+                                    more = more.trim().substring("[".length());
+                                }
+                                builder = new StringBuilder();
+                                System.out.println("Restarted the " + cyan("@ai [") + " multi-line message");
+                            }
+                            builder.append(more);
+                            builder.append("\n");
+                        }
+                        line = builder.toString();
+                    }
+                    chat(line.trim());
+                } else {
+                    warn("Unrecognized command: " + line + ". To see the help menu, type 'h' and press Enter.");
                 }
             }
         }
