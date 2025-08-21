@@ -2759,9 +2759,9 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
 		}
         LoadingThread.hide();
         LoadingThread.resetElapsed();
-        System.out.println("");
+        Utils.printReplyTop();
         System.out.println(response);
-        System.out.println("");
+        Utils.printReplyBottom();
     }
 
     private class HotkeyReader implements Runnable {

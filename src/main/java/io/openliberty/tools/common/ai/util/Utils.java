@@ -29,6 +29,9 @@ import org.jline.terminal.TerminalBuilder;
 
 public class Utils {
 
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+    private static final int CONSOLE_WIDTH = 79;
+
     private static Map <String, FilePermission> filePermissions = new HashMap<String, FilePermission>();
 
     public static LineReader reader;
@@ -55,12 +58,12 @@ public class Utils {
 
     public static LineReader getReader() {
         if (reader == null) {
-			try {
-				terminal = TerminalBuilder.builder().system(true).build();
-	            reader = LineReaderBuilder.builder().terminal(terminal).build();
-			} catch (IOException e) {
-				// do nothing
-			}
+            try {
+                terminal = TerminalBuilder.builder().system(true).build();
+                reader = LineReaderBuilder.builder().terminal(terminal).build();
+            } catch (IOException e) {
+                // do nothing
+            }
         }
         return reader;
     }
@@ -68,10 +71,10 @@ public class Utils {
     public static void closeTerminal() {
         if (terminal != null) {
             try {
-				terminal.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+                terminal.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             terminal = null;
         }
     }
@@ -114,8 +117,26 @@ public class Utils {
         return false;
     }
 
+    public static void printReplyTop() {
+        System.out.print(IS_WINDOWS ? "\n+" : "\n\u250C");
+        for (int i = 0; i < CONSOLE_WIDTH; i++) {
+            System.out.print(IS_WINDOWS ? "-" : "\u2500");
+        }
+        System.out.println("\n");
+        // System.out.println("\u2510\n");
+    }
+
+    public static void printReplyBottom() {
+        System.out.print(IS_WINDOWS ? "+" : "\u2514");
+        for (int i = 0; i < CONSOLE_WIDTH; i++) {
+            System.out.print(IS_WINDOWS ? "-" : "\u2500");
+        }
+        System.out.println("\n");
+        // System.out.println("\u2518\n");
+    }
+
     public static void clearPermissions() {
         filePermissions.clear();
     }
-    
+
 }
