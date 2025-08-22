@@ -2828,17 +2828,19 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                     }
                 } else if (a.isPressed(line)) {
                     // Reverse the mode
-                    if (AIMode == true) {
-                        info("AI mode has been turned off.");
-                    } else {
+                    AIMode = !AIMode;
+                    if (AIMode) {
                         if (getChatAgent() == null) {
                             warn("AI could not be started, ensure the API/URL and model is correct");
                             continue;
                         }
-
-                        info("AI mode has been turned on.");
+                        info(formatAttentionBarrier());
+                        printAIStatus();
+                        info(formatAttentionMessage(""));
+                        info(formatAttentionBarrier());
+                    } else {
+                        info("AI mode has been turned off.");
                     }
-                    AIMode = !AIMode;
                 } else if ((t.isPressed(line) && isChangeOnDemandTestsAction()) || (enter.isPressed(line) && !isChangeOnDemandTestsAction())) {
                     debug("Detected test command. Running tests... ");
                     if (isMultiModuleProject()) {
