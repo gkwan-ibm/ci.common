@@ -2828,18 +2828,20 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                     }
                 } else if (a.isPressed(line)) {
                     // Reverse the mode
-                    AIMode = !AIMode;
                     if (AIMode) {
+                        info("AI mode has been turned off.");
+                        AIMode = false;
+                    } else {
                         if (getChatAgent() == null) {
                             warn("AI could not be started, ensure the API/URL and model is correct");
+                            AIMode = false;
                             continue;
                         }
+                        AIMode = true;
                         info(formatAttentionBarrier());
                         printAIStatus();
                         info(formatAttentionMessage(""));
                         info(formatAttentionBarrier());
-                    } else {
-                        info("AI mode has been turned off.");
                     }
                 } else if ((t.isPressed(line) && isChangeOnDemandTestsAction()) || (enter.isPressed(line) && !isChangeOnDemandTestsAction())) {
                     debug("Detected test command. Running tests... ");
@@ -2855,7 +2857,6 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                     if (getChatAgent() == null) {
                         warn("AI could not be started, ensure the API/URL and model is correct");
                     }
-
                     line = line.substring("@ai".length());
                     if (line.trim().startsWith("[")) {
                             // Accept multiline input between @ai[ and @ai]
