@@ -2861,7 +2861,6 @@ public abstract class DevUtil extends AbstractContainerSupportUtil {
                             if (line.substring(line.lastIndexOf('\n')).matches("^@ai\\s*\\]\\s*$")) {
                                 line = line.substring(0, line.lastIndexOf("\n")).trim();
                             }
-                        line = builder.toString();
                     }
                     chat(line.trim());
                 } else {
