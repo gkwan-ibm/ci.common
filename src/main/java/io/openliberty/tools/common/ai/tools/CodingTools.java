@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.github.javaparser.ParseProblemException;
@@ -57,6 +58,10 @@ public class CodingTools {
         return Utils.writeFile(file);
     }
 
+    public File promptSelection(List<File> files, Function<File, String> toString, String prompt) {
+        return Utils.promptSelection(files, toString, prompt);
+    }
+
     private File findFile(String name) throws Exception {
         Path dir = Paths.get(workingDirectory);
         matchingFiles = new ArrayList<>();
@@ -70,7 +75,7 @@ public class CodingTools {
         } else if (matchingFiles.size() == 1) {
             return matchingFiles.get(0);
         } else {
-            return Utils.promptSelection(
+            return promptSelection(
                 matchingFiles,
                 file -> file.getAbsolutePath(),
                 "There are multiple files with the name " + name + ". Which one did you mean?"
