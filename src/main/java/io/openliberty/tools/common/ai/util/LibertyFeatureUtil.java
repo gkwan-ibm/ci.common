@@ -226,42 +226,6 @@ public class LibertyFeatureUtil {
         return libertyPlatforms;    
     }
 
-    public static void printLibertyInstalledFeatures() {
-        for (String f : getLibertyInstalledFeatures()) {
-            LibertyFeature libertyFeature = getLibertyFeature(f);
-            System.out.println(libertyFeature);
-            if (!libertyFeature.getPlatforms().isEmpty()) {
-                System.out.println("  platforms:");
-                for (String p : libertyFeature.getPlatforms()) {
-                    System.out.println("    " + p);
-                }
-            }
-            System.out.println("  description: " + libertyFeature.getShortDescription());
-            System.out.println();
-        }
-        System.out.println("isVersionless: " + isVersionless());
-        if (getPlatforms() != null && !getPlatforms().isEmpty()) {
-            System.out.println("Using platforms:");
-            for (String p : getPlatforms()) {
-                System.out.println("  " + p);
-            }
-        }
-    }
-
-    public static void printLibertyFeatures() {
-        for (LibertyFeature f : getLibertyFeatures()) {
-            System.out.println(f);
-            if (!f.getPlatforms().isEmpty()) {
-                System.out.println("  platforms:");
-                for (String p : f.getPlatforms()) {
-                    System.out.println("    " + p);
-                }               
-            }
-            System.out.println("  description: " + f.getShortDescription());
-            System.out.println();
-        }
-    }
-
     public static void reset() {
         libertyFeatures = null;
         libertyInstalledFeatures = null;

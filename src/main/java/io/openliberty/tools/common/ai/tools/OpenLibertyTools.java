@@ -33,10 +33,13 @@ import org.w3c.dom.NodeList;
 
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
+import io.openliberty.tools.common.ai.util.LibertyFeature;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
+
+import io.openliberty.tools.common.ai.util.LibertyFeatureUtil;
 
 public class OpenLibertyTools {
 
@@ -138,6 +141,58 @@ public class OpenLibertyTools {
             }
         }
         return guides;
+    }
+
+    @Tool("Get all liberty features that are installed")
+    public String getLibertyInstalledFeatures() {
+        StringBuilder installedFeatures = new StringBuilder();
+
+        for (String f : LibertyFeatureUtil.getLibertyInstalledFeatures()) {
+            LibertyFeature libertyFeature = LibertyFeatureUtil.getLibertyFeature(f);
+            installedFeatures.append(libertyFeature);
+
+            if (!libertyFeature.getPlatforms().isEmpty()) {
+                installedFeatures.append("  platforms:");
+
+                for (String p : libertyFeature.getPlatforms()) {
+                    installedFeatures.append(" " + p);
+                }
+            }
+
+            installedFeatures.append("  description: " + libertyFeature.getShortDescription() + '\n');
+        }
+
+        installedFeatures.append("isVersionless: " + LibertyFeatureUtil.isVersionless());
+
+        if (LibertyFeatureUtil.getPlatforms() != null && !LibertyFeatureUtil.getPlatforms().isEmpty()) {
+            installedFeatures.append("Using platforms: ");
+            for (String p : LibertyFeatureUtil.getPlatforms()) {
+                installedFeatures.append(p);
+            }
+        }
+
+        return installedFeatures.toString();
+    }
+
+    @Tool("Get all possible installable liberty features")
+    public String getLibertyFeatures() {
+        StringBuilder libertyFeatures = new StringBuilder();
+
+        for (LibertyFeature feature : LibertyFeatureUtil.getLibertyFeatures()) {
+            libertyFeatures.append(feature);
+
+            if (!feature.getPlatforms().isEmpty()) {
+                libertyFeatures.append("  platforms:");
+
+                for (String p : feature.getPlatforms()) {
+                    libertyFeatures.append(" " + p);
+                }               
+            }
+
+            libertyFeatures.append("  description: " + feature.getShortDescription() + '\n');
+        }
+        
+        return libertyFeatures.toString();
     }
 
 }
