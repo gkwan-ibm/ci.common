@@ -143,12 +143,19 @@ public class OpenLibertyTools {
         return guides;
     }
 
-    @Tool("Get all liberty features that are installed")
-    public String getLibertyInstalledFeatures() {
+    @Tool("Get liberty features that are currently installed")
+    public String getLibertyInstalledFeatures(@P(value = "What word must be in the feature", required = false) String filter) {
         StringBuilder installedFeatures = new StringBuilder();
 
-        for (String f : LibertyFeatureUtil.getLibertyInstalledFeatures()) {
-            LibertyFeature libertyFeature = LibertyFeatureUtil.getLibertyFeature(f);
+        if (filter != null) {
+            filter = filter.toLowerCase();
+        }
+
+        for (String feature : LibertyFeatureUtil.getLibertyInstalledFeatures()) {
+            if (filter != null || feature.toString().toLowerCase().contains(filter)) {
+                continue;
+            }
+            LibertyFeature libertyFeature = LibertyFeatureUtil.getLibertyFeature(feature);
             installedFeatures.append(libertyFeature);
 
             if (!libertyFeature.getPlatforms().isEmpty()) {
@@ -171,14 +178,24 @@ public class OpenLibertyTools {
             }
         }
 
+        if (installedFeatures.isEmpty()) {
+            return "None";
+        }
         return installedFeatures.toString();
     }
 
-    @Tool("Get all possible installable liberty features")
-    public String getLibertyFeatures() {
+    @Tool("Get liberty features that can be installed")
+    public String getInstallableLibertyFeatures(@P(value = "What word must be in the feature", required = false) String filter) {
         StringBuilder libertyFeatures = new StringBuilder();
+        
+        if (filter != null) {
+            filter = filter.toLowerCase();
+        }
 
         for (LibertyFeature feature : LibertyFeatureUtil.getLibertyFeatures()) {
+            if (filter != null || feature.toString().toLowerCase().contains(filter)) {
+                continue;
+            }
             libertyFeatures.append(feature);
 
             if (!feature.getPlatforms().isEmpty()) {
@@ -192,6 +209,9 @@ public class OpenLibertyTools {
             libertyFeatures.append("  description: " + feature.getShortDescription() + '\n');
         }
         
+        if (libertyFeatures.isEmpty()) {
+            return "None";
+        }
         return libertyFeatures.toString();
     }
 
