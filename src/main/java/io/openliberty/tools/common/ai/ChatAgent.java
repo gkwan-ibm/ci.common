@@ -20,6 +20,7 @@ import dev.langchain4j.exception.InvalidRequestException;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.rag.RetrievalAugmentor;
 import dev.langchain4j.service.AiServices;
+import io.openliberty.tools.common.ai.tools.AgentTools;
 import io.openliberty.tools.common.ai.tools.CodingTools;
 import io.openliberty.tools.common.ai.tools.OpenLibertyTools;
 import io.openliberty.tools.common.ai.tools.StackOverFlowTools;
@@ -35,6 +36,7 @@ public class ChatAgent {
     private CodingTools codingTools;
     private StackOverFlowTools stackOverFlowTools = new StackOverFlowTools();
     private OpenLibertyTools openLibertyTools = new OpenLibertyTools();
+    private AgentTools agentTools;
 
     private MarkdownConsoleFormatter mdFormatter = new MarkdownConsoleFormatter();
 
@@ -51,21 +53,28 @@ public class ChatAgent {
     public ChatAgent(int memoryId, CodingTools codingTools) throws Exception {
         this.memoryId = memoryId;
         this.codingTools = codingTools;
+        agentTools = new AgentTools(codingTools);
         getAssistant();
+        agentTools.setAssistant(assistant);
     }
 
     public Assistant getAssistant() throws Exception {
         if (assistant == null) {
-            AiServices<Assistant> builder =
-                AiServices.builder(Assistant.class)
+            AiServices<Assistant> builder = null;
+            try {
+                builder = AiServices.builder(Assistant.class)
                     .chatModel(modelBuilder.getChatModel())
-                    .tools(stackOverFlowTools, codingTools, openLibertyTools)
+                    .tools(stackOverFlowTools, codingTools, openLibertyTools, agentTools)
                     .hallucinatedToolNameStrategy(
                         toolExecutionRequest -> ToolExecutionResultMessage.from(toolExecutionRequest,
                             "Error: there is no tool with the following parameters called "
                             + toolExecutionRequest.name()))
                     .chatMemoryProvider(
                          sessionId -> MessageWindowChatMemory.withMaxMessages(modelBuilder.getMaxMessages()));
+
+            }  catch (Exception e) {
+                e.printStackTrace();
+            }
             RagCreator creator = new RagCreator();
             RetrievalAugmentor retrivalAugmentator = creator.getRetrievalAugmentor(modelBuilder.getEmbeddingModel());
             if (retrivalAugmentator == null) {
