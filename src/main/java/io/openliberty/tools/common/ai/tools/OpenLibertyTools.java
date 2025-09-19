@@ -152,9 +152,12 @@ public class OpenLibertyTools {
         }
 
         for (String feature : LibertyFeatureUtil.getLibertyInstalledFeatures()) {
-            if (filter != null || feature.toString().toLowerCase().contains(filter)) {
+            if (filter != null || !feature.toString().toLowerCase().contains(filter)) {
                 continue;
+            }else if (installedFeatures.isEmpty()) {
+                installedFeatures.append("Return the following list with every feature on the same line. Do not put it in a table \n");
             }
+
             LibertyFeature libertyFeature = LibertyFeatureUtil.getLibertyFeature(feature);
             installedFeatures.append(libertyFeature);
 
@@ -193,9 +196,12 @@ public class OpenLibertyTools {
         }
 
         for (LibertyFeature feature : LibertyFeatureUtil.getLibertyFeatures()) {
-            if (filter != null || feature.toString().toLowerCase().contains(filter)) {
+            if (filter != null || !feature.toString().toLowerCase().contains(filter)) {
                 continue;
+            }else if (libertyFeatures.isEmpty()) {
+                libertyFeatures.append("Return the following list with every feature on the same line. Do not put it in a table \n");
             }
+
             libertyFeatures.append(feature);
 
             if (!feature.getPlatforms().isEmpty()) {
