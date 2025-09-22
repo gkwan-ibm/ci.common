@@ -41,10 +41,12 @@ import jakarta.json.bind.JsonbBuilder;
 
 import io.openliberty.tools.common.ai.util.LibertyFeatureUtil;
 
-public class OpenLibertyTools {
+public class OpenLibertyTools implements ToolInterface {
 
     private static final String OL_IO_FEED_XML = "https://openliberty.io/feed.xml";
     private static Jsonb JSONB = JsonbBuilder.create();
+
+    private String output = "";
 
     @Tool("Get the OpenLiberty blogs")
     public ArrayList<String> getOpenLibertyBlogs() throws Exception {
@@ -143,50 +145,6 @@ public class OpenLibertyTools {
         return guides;
     }
 
-    @Tool("Get liberty features that are currently installed")
-    public String getLibertyInstalledFeatures(@P(value = "What word must be in the feature", required = false) String filter) {
-        StringBuilder installedFeatures = new StringBuilder();
-
-        if (filter != null) {
-            filter = filter.toLowerCase();
-        }
-
-        for (String feature : LibertyFeatureUtil.getLibertyInstalledFeatures()) {
-            if (filter != null && !feature.toString().toLowerCase().contains(filter)) {
-                continue;
-            }else if (installedFeatures.isEmpty()) {
-                installedFeatures.append("Return the following list with every feature on the same line. Do not put it in a table \n");
-            }
-
-            LibertyFeature libertyFeature = LibertyFeatureUtil.getLibertyFeature(feature);
-            installedFeatures.append(libertyFeature);
-
-            if (!libertyFeature.getPlatforms().isEmpty()) {
-                installedFeatures.append("  platforms:");
-
-                for (String p : libertyFeature.getPlatforms()) {
-                    installedFeatures.append(" " + p);
-                }
-            }
-
-            installedFeatures.append("  description: " + libertyFeature.getShortDescription() + '\n');
-        }
-
-        installedFeatures.append("isVersionless: " + LibertyFeatureUtil.isVersionless());
-
-        if (LibertyFeatureUtil.getPlatforms() != null && !LibertyFeatureUtil.getPlatforms().isEmpty()) {
-            installedFeatures.append("Using platforms: ");
-            for (String p : LibertyFeatureUtil.getPlatforms()) {
-                installedFeatures.append(p);
-            }
-        }
-
-        if (installedFeatures.isEmpty()) {
-            return "None";
-        }
-        return installedFeatures.toString();
-    }
-
     @Tool("Get liberty features that can be installed")
     public String getInstallableLibertyFeatures(@P(value = "What word must be in the feature", required = false) String filter) {
         StringBuilder libertyFeatures = new StringBuilder();
@@ -198,27 +156,26 @@ public class OpenLibertyTools {
         for (LibertyFeature feature : LibertyFeatureUtil.getLibertyFeatures()) {
             if (filter != null && !feature.toString().toLowerCase().contains(filter)) {
                 continue;
-            }else if (libertyFeatures.isEmpty()) {
-                libertyFeatures.append("Return the following list with every feature on the same line. Do not put it in a table \n");
             }
 
-            libertyFeatures.append(feature);
-
-            if (!feature.getPlatforms().isEmpty()) {
-                libertyFeatures.append("  platforms:");
-
-                for (String p : feature.getPlatforms()) {
-                    libertyFeatures.append(" " + p);
-                }               
-            }
-
-            libertyFeatures.append("  description: " + feature.getShortDescription() + '\n');
+            libertyFeatures.append("**" + feature + "** \n");
+            libertyFeatures.append("  description: " + feature.getShortDescription() + "\n\n");
         }
         
         if (libertyFeatures.isEmpty()) {
             return "None";
         }
-        return libertyFeatures.toString();
+
+        output = libertyFeatures.toString();
+        return "This is only for your information, your output will not be printed: " + libertyFeatures;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void flushOutput() {
+        output = "";
     }
 
 }

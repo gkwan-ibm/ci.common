@@ -15,6 +15,10 @@
  */
 package io.openliberty.tools.common.ai;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import dev.langchain4j.data.message.ToolExecutionResultMessage;
 import dev.langchain4j.exception.InvalidRequestException;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
@@ -24,19 +28,18 @@ import io.openliberty.tools.common.ai.tools.AgentTools;
 import io.openliberty.tools.common.ai.tools.CodingTools;
 import io.openliberty.tools.common.ai.tools.OpenLibertyTools;
 import io.openliberty.tools.common.ai.tools.StackOverFlowTools;
+import io.openliberty.tools.common.ai.tools.ToolInterface;
 import io.openliberty.tools.common.ai.util.Assistant;
 import io.openliberty.tools.common.ai.util.MarkdownConsoleFormatter;
 import io.openliberty.tools.common.ai.util.ModelBuilder;
 import io.openliberty.tools.common.ai.util.RagCreator;
 import io.openliberty.tools.common.ai.util.Utils;
+import jakarta.validation.constraints.Null;
 
 public class ChatAgent {
     private ModelBuilder modelBuilder = new ModelBuilder();
 
-    private CodingTools codingTools;
-    private StackOverFlowTools stackOverFlowTools = new StackOverFlowTools();
-    private OpenLibertyTools openLibertyTools = new OpenLibertyTools();
-    private AgentTools agentTools;
+    private ArrayList <ToolInterface> tools;
 
     private MarkdownConsoleFormatter mdFormatter = new MarkdownConsoleFormatter();
 
@@ -52,10 +55,13 @@ public class ChatAgent {
 
     public ChatAgent(int memoryId, CodingTools codingTools) throws Exception {
         this.memoryId = memoryId;
-        this.codingTools = codingTools;
-        agentTools = new AgentTools(codingTools);
-        getAssistant();
-        agentTools.setAssistant(assistant);
+
+        AgentTools agentTools = new AgentTools(codingTools);
+        this.tools = new ArrayList<>(Arrays.asList(codingTools, new StackOverFlowTools(), new OpenLibertyTools(), agentTools));
+
+        this.assistant = getAssistant();
+
+        agentTools.setAssistant(this.assistant);
     }
 
     public Assistant getAssistant() throws Exception {
@@ -64,14 +70,14 @@ public class ChatAgent {
             try {
                 builder = AiServices.builder(Assistant.class)
                     .chatModel(modelBuilder.getChatModel())
-                    .tools(stackOverFlowTools, codingTools, openLibertyTools, agentTools)
+                    .tools(this.tools.toArray())
                     .hallucinatedToolNameStrategy(
                         toolExecutionRequest -> ToolExecutionResultMessage.from(toolExecutionRequest,
                             "Error: there is no tool with the following parameters called "
                             + toolExecutionRequest.name()))
                     .chatMemoryProvider(
                          sessionId -> MessageWindowChatMemory.withMaxMessages(modelBuilder.getMaxMessages()));
-
+                
             }  catch (Exception e) {
                 e.printStackTrace();
             }
@@ -82,6 +88,7 @@ public class ChatAgent {
             } else {
                 builder.retrievalAugmentor(retrivalAugmentator);
             }
+
             assistant = builder.build();
 
             try {
@@ -116,6 +123,14 @@ public class ChatAgent {
             return "The current chat session is reset.\n";
         } else {
             String response = getAssistant().chat(memoryId, message).content().trim();
+
+            for (ToolInterface tool : tools) {
+                if (!tool.getOutput().isBlank()) {
+                    response = tool.getOutput();
+                    tool.flushOutput();
+                }
+            }
+
             return mdFormatter.rerender(response);
         }
     }

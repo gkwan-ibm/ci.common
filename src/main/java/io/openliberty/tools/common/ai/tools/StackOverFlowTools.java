@@ -31,7 +31,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-public class StackOverFlowTools {
+public class StackOverFlowTools implements ToolInterface {
 
     private static String stackOverflowSite = "https://api.stackexchange.com/2.3/search/advanced?site=stackoverflow";
     private static String size = "&pagesize=3";
@@ -42,6 +42,8 @@ public class StackOverFlowTools {
     private static String findAnswer = "https://api.stackexchange.com"
                                        + "/2.3/questions/%s/answers?order=desc&sort=votes&site=stackoverflow&"
                                        + "filter=CKAkJFla(8TLNtkfr1ytJZj94MlNVo6Ee";
+
+    private String output = "";
 
     private String encodeUrl(String url) throws UnsupportedEncodingException {
         return url.replace(" ", "%20");
@@ -85,6 +87,14 @@ public class StackOverFlowTools {
         } catch (ConnectException e) {
             throw new Exception("No internet connection");
         }
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void flushOutput() {
+        output = "";
     }
 
 }
