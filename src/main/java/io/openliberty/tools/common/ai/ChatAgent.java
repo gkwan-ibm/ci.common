@@ -122,7 +122,7 @@ public class ChatAgent {
             resetChat();
             return "The current chat session is reset.\n";
         } else {
-            String response = getAssistant().chat(memoryId, message).content().trim();
+            String response = getAssistant().chat(memoryId, message).content();
 
             for (ToolInterface tool : tools) {
                 if (!tool.getOutput().isBlank()) {
@@ -131,7 +131,10 @@ public class ChatAgent {
                 }
             }
 
-            return mdFormatter.rerender(response);
+            if (response == null || response.isBlank()) {
+                return "AI reponsonded with nothing. Try your message again or a new message.\n";
+            }
+            return mdFormatter.rerender(response.trim());
         }
     }
 
