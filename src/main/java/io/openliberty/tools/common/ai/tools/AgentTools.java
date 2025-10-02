@@ -59,9 +59,8 @@ public class AgentTools implements ToolInterface {
     public String enableOpenLibertyFeature(@P("What you would like to do") String query) throws Exception {
         // Use a different Agent to allow concurrent messaging, we can generalize this to any multifile update by having an agent at the beginning
         // return a list of files that need to update based on the query
-        Utils.confirm("Here we start\n");
         Utils.confirm(query);
-        String filter = assistant.chat(AGENT_ID, "What exact feature is the user looking for? Here is the user query" +
+        String filter = assistant.chat(AGENT_ID, "What exact feature is the user looking for? This is what the user is looking for " +
                     query + 
                     "include the name only so I can filter and find for you (Example: openAPI)").content();
 
@@ -83,13 +82,13 @@ public class AgentTools implements ToolInterface {
             "Update the server.xml and return ONLY all the contents from start to beginning of the new server.xml without any codeblocks (Markdown).\n"
         ).content();
 
-        if (!assistant.chat(AGENT_ID, "Will your changes satisfy the user? reply with only one character, no formatting [y | n]").content().equalsIgnoreCase("y")) {
+        if (assistant.chat(AGENT_ID, "Will your changes satisfy the user? reply with only one character, without any formatting [y | n]").content().equalsIgnoreCase("n")) {
             String explanation = assistant.chat(AGENT_ID, "Why won't it work").content();
             assistant.evictChatMemory(AGENT_ID);
-            return explanation;
+            return "AI tool said it could not be enabled for the following reason: " + explanation;
         }
 
-        String agenticResponse = assistant.chat(AGENT_ID, "What changes did you make to enable those features? Be descriptive and explain why").content();
+        String agenticResponse = assistant.chat(AGENT_ID, "What changes did you make to enable those features? What did you add? Be descriptive and explain why").content();
         assistant.evictChatMemory(AGENT_ID);
 
         Utils.confirm(newServerXML);
