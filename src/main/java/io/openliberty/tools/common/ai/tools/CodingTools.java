@@ -38,15 +38,34 @@ import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import io.openliberty.tools.common.ai.util.Utils;
 
-public class CodingTools {
+public class CodingTools implements ToolInterface {
 
     private String workingDirectory = System.getProperty("user.dir");
+    private String output = "";
 
     private ArrayList <File> matchingFiles;
 
     private void fileMatch(File file, String name) {
         if (file.isFile() && file.getName().equalsIgnoreCase(name)) {
             matchingFiles.add(file);
+        }
+    }
+
+    private String getWhiteSpace(String string) {
+        if (string.isBlank()) {
+            return "";
+        } else {
+            StringBuilder whiteSpace = new StringBuilder();
+            
+            for (int i = 0; i<string.length(); ++i) {
+                if (!Character.isWhitespace(string.charAt(i))) {
+                    break;
+                }
+
+                whiteSpace.append(string.charAt(i));
+            }
+
+            return whiteSpace.toString();
         }
     }
 
@@ -257,5 +276,46 @@ public class CodingTools {
         }
         Files.write(file.toPath(), fileContent);
     }
+
+    //@Tool ("Rewrite the contents of a file\n")
+    public void rewriteFile(@P("Name of the java class file (example: HelloWorld.java)") String fileName,
+                            @P("New file contents") String content) throws Exception {
+
+        File file = findFile(fileName);
+
+        if (!confirmWriteFile(file))
+            throw new Exception("User did not give permissions to edit the file: " + file.getAbsolutePath());
+        Files.write(file.toPath(), content.getBytes());
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void flushOutput() {
+        output = "";
+    }
+    // @Tool("Add feature to server.xml")
+    // public void addFeatureToServer(@P("Exact feature name to be added Example (openapi)") String feature) throws Exception {
+
+    //     File file = findFile("server.xml");
+
+    //     if (!confirmWriteFile(file))
+    //         throw new Exception("User did not give permissions to edit the file: " + file.getAbsolutePath());
+
+    //     List<String> fileContent = Files.readAllLines(file.toPath());
+
+    //     // the feature is guaranteed to not be added to the first line
+    //     for (int i = 1; i<fileContent.size(); ++i) {
+            
+    //         // Must be <featureManager 'any characters' >
+    //         if (!fileContent.get(i - 1).matches(".*<featureManager.*>.*")) {
+    //             continue;
+    //         }
+    //         String indent = " ".repeat(i - 1);
+    //         fileContent.add(i, indent + "<feature>" + feature + "</feature>");
+    //     }
+    //     Files.write(file.toPath(), fileContent);
+    // }
 
 }
