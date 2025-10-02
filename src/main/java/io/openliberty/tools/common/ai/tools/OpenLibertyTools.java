@@ -159,7 +159,8 @@ public class OpenLibertyTools implements ToolInterface {
             }
 
             libertyFeatures.append("**" + feature + "** \n");
-            libertyFeatures.append("- " + feature.getShortDescription() + "\n\n");
+            if (filter != "No description")
+                libertyFeatures.append("- " + feature.getShortDescription() + "\n\n");
         }
         
         if (libertyFeatures.isEmpty()) {

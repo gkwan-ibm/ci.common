@@ -51,6 +51,24 @@ public class CodingTools implements ToolInterface {
         }
     }
 
+    private String getWhiteSpace(String string) {
+        if (string.isBlank()) {
+            return "";
+        } else {
+            StringBuilder whiteSpace = new StringBuilder();
+            
+            for (int i = 0; i<string.length(); ++i) {
+                if (!Character.isWhitespace(string.charAt(i))) {
+                    break;
+                }
+
+                whiteSpace.append(string.charAt(i));
+            }
+
+            return whiteSpace.toString();
+        }
+    }
+
     public boolean confirmReadFile(File file) throws Exception {
         return Utils.readFile(file);
     }
@@ -259,7 +277,7 @@ public class CodingTools implements ToolInterface {
         Files.write(file.toPath(), fileContent);
     }
 
-    @Tool ("Rewrite the contents of a file\n")
+    //@Tool ("Rewrite the contents of a file\n")
     public void rewriteFile(@P("Name of the java class file (example: HelloWorld.java)") String fileName,
                             @P("New file contents") String content) throws Exception {
 
@@ -277,5 +295,27 @@ public class CodingTools implements ToolInterface {
     public void flushOutput() {
         output = "";
     }
+    // @Tool("Add feature to server.xml")
+    // public void addFeatureToServer(@P("Exact feature name to be added Example (openapi)") String feature) throws Exception {
+
+    //     File file = findFile("server.xml");
+
+    //     if (!confirmWriteFile(file))
+    //         throw new Exception("User did not give permissions to edit the file: " + file.getAbsolutePath());
+
+    //     List<String> fileContent = Files.readAllLines(file.toPath());
+
+    //     // the feature is guaranteed to not be added to the first line
+    //     for (int i = 1; i<fileContent.size(); ++i) {
+            
+    //         // Must be <featureManager 'any characters' >
+    //         if (!fileContent.get(i - 1).matches(".*<featureManager.*>.*")) {
+    //             continue;
+    //         }
+    //         String indent = " ".repeat(i - 1);
+    //         fileContent.add(i, indent + "<feature>" + feature + "</feature>");
+    //     }
+    //     Files.write(file.toPath(), fileContent);
+    // }
 
 }
