@@ -61,7 +61,12 @@ public class ChatAgent {
 
         this.assistant = getAssistant();
 
-        agentTools.setAssistant(this.assistant);
+        agentTools.setAssistant(
+                        AiServices.builder(Assistant.class)
+                        .chatModel(modelBuilder.getChatModel())
+                        .chatMemoryProvider(
+                            sessionId -> MessageWindowChatMemory.withMaxMessages(modelBuilder.getMaxMessages())).build()
+                        );
     }
 
     public Assistant getAssistant() throws Exception {

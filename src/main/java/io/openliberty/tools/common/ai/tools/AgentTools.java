@@ -3,11 +3,11 @@ package io.openliberty.tools.common.ai.tools;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 // import dev.langchain4j.agentic.AgenticServices;
-import dev.langchain4j.agentic.supervisor.SupervisorAgent;
+// import dev.langchain4j.agentic.supervisor.SupervisorAgent;
 // import dev.langchain4j.agentic.supervisor.SupervisorContextStrategy;
-import dev.langchain4j.agentic.workflow.HumanInTheLoop;
+// import dev.langchain4j.agentic.workflow.HumanInTheLoop;
 import io.openliberty.tools.common.ai.util.Assistant;
-import io.openliberty.tools.common.ai.util.ModelBuilder;
+// import io.openliberty.tools.common.ai.util.ModelBuilder;
 import io.openliberty.tools.common.ai.util.Utils;
 
 public class AgentTools implements ToolInterface {
@@ -15,15 +15,15 @@ public class AgentTools implements ToolInterface {
     // private ModelBuilder modelBuilder = new ModelBuilder();
     
     private String output = "";
-    private final Integer AGENT_ID = 2;
+    private final Integer AGENT_ID = 3;
 
     Assistant assistant;
     CodingTools codingTools;
     OpenLibertyTools openLibertyTools = new OpenLibertyTools();
 
-    CodeGenerator codeGenerator;
-    HumanInTheLoop humanInTheLoop;
-    SupervisorAgent codeSupervisor;
+    // CodeGenerator codeGenerator;
+    // HumanInTheLoop humanInTheLoop;
+    // SupervisorAgent codeSupervisor;
     
     public AgentTools(CodingTools codingTools) {
         this.codingTools = codingTools;
@@ -59,25 +59,21 @@ public class AgentTools implements ToolInterface {
     public String enableOpenLibertyFeature(@P("What you would like to do") String query) throws Exception {
         // Use a different Agent to allow concurrent messaging, we can generalize this to any multifile update by having an agent at the beginning
         // return a list of files that need to update based on the query
-        Utils.confirm(query);
         String filter = assistant.chat(AGENT_ID, "What exact feature is the user looking for? This is what the user is looking for " +
                     query + 
-                    "include the name only so I can filter and find for you (Example: openAPI)").content();
+                    "include only ONE word, the name only so I can filter and find for you (Example: openAPI)").content();
 
-        Utils.confirm(filter);
+        
+        assistant.chat(AGENT_ID, "Here are all the installable openliberty features, if there arent any that the user wants, dont make any changes: " + openLibertyTools.getInstallableLibertyFeatures(filter));
 
-        assistant.chat(AGENT_ID, "Here are all the installable openliberty features, if there arent any that the user wants, dont make any changes..." + openLibertyTools.getInstallableLibertyFeatures(filter));
         String pomXMLContent = codingTools.readFile("pom.xml");
         String newPomXML = assistant.chat(AGENT_ID,
-            "With the following query given by the user: " + query + "\n" +
             "Here is the old pom.xml\n" + pomXMLContent + "\n" +
             "Update the pom.xml and return ONLY all the contents from start to beginning of the new pom.xml without any codeblocks (Markdown).\n"
         ).content();
 
-
         String serverXMLContent = codingTools.readFile("server.xml");
         String newServerXML = assistant.chat(AGENT_ID,
-            "With the following query given by the user: " + query + "\n" +
             "Here is the old server.xml: \n" + serverXMLContent + "\n" +
             "Update the server.xml and return ONLY all the contents from start to beginning of the new server.xml without any codeblocks (Markdown).\n"
         ).content();
