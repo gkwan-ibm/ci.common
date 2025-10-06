@@ -33,15 +33,20 @@ import org.w3c.dom.NodeList;
 
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
+import io.openliberty.tools.common.ai.util.LibertyFeature;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 
-public class OpenLibertyTools {
+import io.openliberty.tools.common.ai.util.LibertyFeatureUtil;
+
+public class OpenLibertyTools implements ToolInterface {
 
     private static final String OL_IO_FEED_XML = "https://openliberty.io/feed.xml";
     private static Jsonb JSONB = JsonbBuilder.create();
+
+    private String output = "";
 
     @Tool("Get the OpenLiberty blogs")
     public ArrayList<String> getOpenLibertyBlogs() throws Exception {
@@ -138,6 +143,39 @@ public class OpenLibertyTools {
             }
         }
         return guides;
+    }
+
+    @Tool("Get liberty features that can be installed")
+    public String getInstallableLibertyFeatures(@P(value = "What word must be in the feature", required = false) String filter) {
+        StringBuilder libertyFeatures = new StringBuilder();
+        
+        if (filter != null) {
+            filter = filter.toLowerCase();
+        }
+
+        for (LibertyFeature feature : LibertyFeatureUtil.getLibertyFeatures()) {
+            if (filter != null && !feature.toString().toLowerCase().contains(filter)) {
+                continue;
+            }
+
+            libertyFeatures.append("**" + feature + "** \n");
+            libertyFeatures.append("- " + feature.getShortDescription() + "\n\n");
+        }
+        
+        if (libertyFeatures.isEmpty()) {
+            return "None";
+        }
+
+        output = libertyFeatures.toString();
+        return "This is only for your information, your output will not be printed: " + libertyFeatures;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void flushOutput() {
+        output = "";
     }
 
 }

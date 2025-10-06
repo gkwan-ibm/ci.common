@@ -38,9 +38,10 @@ import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import io.openliberty.tools.common.ai.util.Utils;
 
-public class CodingTools {
+public class CodingTools implements ToolInterface {
 
     private String workingDirectory = System.getProperty("user.dir");
+    private String output = "";
 
     private ArrayList <File> matchingFiles;
 
@@ -256,6 +257,25 @@ public class CodingTools {
             fileContent.add(pos.line - 1, javaDocs);
         }
         Files.write(file.toPath(), fileContent);
+    }
+
+    @Tool ("Rewrite the contents of a file\n")
+    public void rewriteFile(@P("Name of the java class file (example: HelloWorld.java)") String fileName,
+                            @P("New file contents") String content) throws Exception {
+
+        File file = findFile(fileName);
+
+        if (!confirmWriteFile(file))
+            throw new Exception("User did not give permissions to edit the file: " + file.getAbsolutePath());
+        Files.write(file.toPath(), content.getBytes());
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void flushOutput() {
+        output = "";
     }
 
 }
